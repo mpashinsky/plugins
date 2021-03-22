@@ -12,6 +12,9 @@ import androidx.annotation.VisibleForTesting;
 import io.flutter.plugin.common.MethodCall;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 
 class ImagePickerCache {
 
@@ -25,6 +28,7 @@ class ImagePickerCache {
 
   private static final String FLUTTER_IMAGE_PICKER_IMAGE_PATH_KEY =
       "flutter_image_picker_image_path";
+  private static final String FLUTTER_IMAGE_PICKER_IMAGE_PATH_LIST_KEY = "flutter_image_picker_image_path_list";
   private static final String SHARED_PREFERENCE_ERROR_CODE_KEY = "flutter_image_picker_error_code";
   private static final String SHARED_PREFERENCE_ERROR_MESSAGE_KEY =
       "flutter_image_picker_error_message";
@@ -50,7 +54,7 @@ class ImagePickerCache {
   }
 
   void saveTypeWithMethodCallName(String methodCallName) {
-    if (methodCallName.equals(ImagePickerPlugin.METHOD_CALL_IMAGE)) {
+    if (methodCallName.equals(ImagePickerPlugin.METHOD_CALL_IMAGE) || methodCallName.equals(ImagePickerPlugin.METHOD_CALL_IMAGES)) {
       setType("image");
     } else if (methodCallName.equals(ImagePickerPlugin.METHOD_CALL_VIDEO)) {
       setType("video");
@@ -96,6 +100,24 @@ class ImagePickerCache {
   String retrievePendingCameraMediaUriPath() {
 
     return prefs.getString(SHARED_PREFERENCE_PENDING_IMAGE_URI_PATH_KEY, "");
+  }
+
+  void saveListResult(
+          @Nullable List<String> pathList, @Nullable String errorCode, @Nullable String errorMessage) {
+
+    SharedPreferences.Editor editor = prefs.edit();
+    if (pathList != null) {
+      Set<String> set = new HashSet<String>();
+      set.addAll(pathList);
+      editor.putStringSet(FLUTTER_IMAGE_PICKER_IMAGE_PATH_LIST_KEY, set);
+    }
+    if (errorCode != null) {
+      editor.putString(SHARED_PREFERENCE_ERROR_CODE_KEY, errorCode);
+    }
+    if (errorMessage != null) {
+      editor.putString(SHARED_PREFERENCE_ERROR_MESSAGE_KEY, errorMessage);
+    }
+    editor.apply();
   }
 
   void saveResult(

@@ -7,6 +7,9 @@ package io.flutter.plugins.imagepicker;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.ClipData;
+import android.content.Context;
+import android.database.Cursor;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.hardware.camera2.CameraCharacteristics;
@@ -23,6 +26,7 @@ import io.flutter.plugin.common.PluginRegistry;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
 
@@ -489,8 +493,25 @@ public class ImagePickerDelegate
 
   private void handleChooseImageResult(int resultCode, Intent data) {
     if (resultCode == Activity.RESULT_OK && data != null) {
-      String path = fileUtils.getPathFromUri(activity, data.getData());
-      handleImageResult(path, false);
+      String imagePath;
+      List<String> imagesPathList;
+      imagesPathList = new ArrayList<String>();
+      if (data.getData() != null) {
+        imagePath = fileUtils.getPathFromUri(activity, data.getData());
+        imagesPathList.add(imagePath);
+        handleMultiImageResult(imagesPathList, false);
+      } else {
+        if (data.getClipData() != null) {
+          ClipData mClipData = data.getClipData();
+          for (int i = 0; i < mClipData.getItemCount(); i++) {
+            ClipData.Item item = mClipData.getItemAt(i);
+            Uri uri = item.getUri();
+            imagePath = fileUtils.getPathFromUri(activity, uri);
+            imagesPathList.add(imagePath);
+            handleMultiImageResult(imagesPathList, false);
+          }
+        }
+      }
       return;
     }
 
@@ -547,6 +568,11 @@ public class ImagePickerDelegate
     finishWithSuccess(null);
   }
 
+  private void handleMultiImageResult(List<String> pathList, boolean shouldDeleteOriginalIfScaled) {
+    //TODO: implement image resizing
+    finishWithSuccess_List(pathList);
+  }
+
   private void handleImageResult(String path, boolean shouldDeleteOriginalIfScaled) {
     if (methodCall != null) {
       Double maxWidth = methodCall.argument("maxWidth");
@@ -568,6 +594,7 @@ public class ImagePickerDelegate
   }
 
   private void handleVideoResult(String path) {
+    //TODO: Implement image resizing
     finishWithSuccess(path);
   }
 
@@ -584,6 +611,15 @@ public class ImagePickerDelegate
     cache.clear();
 
     return true;
+  }
+
+  private void finishWithSuccess_List(List<String> imagePath) {
+    if (pendingResult == null) {
+      cache.saveListResult(imagePath, null, null);
+      return;
+    }
+    pendingResult.success(imagePath);
+    clearMethodCallAndResult();
   }
 
   private void finishWithSuccess(String imagePath) {

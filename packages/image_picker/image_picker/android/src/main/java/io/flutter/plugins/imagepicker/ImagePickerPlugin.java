@@ -92,6 +92,7 @@ public class ImagePickerPlugin
   }
 
   static final String METHOD_CALL_IMAGE = "pickImage";
+  static final String METHOD_CALL_IMAGES = "pickImages";
   static final String METHOD_CALL_VIDEO = "pickVideo";
   private static final String METHOD_CALL_RETRIEVE = "retrieve";
   private static final int CAMERA_DEVICE_FRONT = 1;
@@ -298,6 +299,16 @@ public class ImagePickerPlugin
             break;
           case SOURCE_CAMERA:
             delegate.takeImageWithCamera(call, result);
+            break;
+          default:
+            throw new IllegalArgumentException("Invalid image source: " + imageSource);
+        }
+        break;
+      case METHOD_CALL_IMAGES:
+        imageSource = call.argument("source");
+        switch (imageSource) {
+          case SOURCE_GALLERY:
+            delegate.chooseImageFromGallery(call, result);
             break;
           default:
             throw new IllegalArgumentException("Invalid image source: " + imageSource);

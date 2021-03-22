@@ -9,7 +9,6 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
-
 export 'package:image_picker_platform_interface/image_picker_platform_interface.dart'
     show
         kTypeImage,
@@ -18,6 +17,7 @@ export 'package:image_picker_platform_interface/image_picker_platform_interface.
         CameraDevice,
         LostData,
         PickedFile,
+        PickedFiles,
         RetrieveType;
 
 /// Provides an easy way to pick an image/video from the image library,
@@ -62,6 +62,23 @@ class ImagePicker {
     CameraDevice preferredCameraDevice = CameraDevice.rear,
   }) {
     return platform.pickImage(
+      source: source,
+      maxWidth: maxWidth,
+      maxHeight: maxHeight,
+      imageQuality: imageQuality,
+      preferredCameraDevice: preferredCameraDevice,
+    );
+  }
+
+  ///
+  Future<PickedFiles?> getImages({
+    required ImageSource source,
+    double? maxWidth,
+    double? maxHeight,
+    int? imageQuality,
+    CameraDevice preferredCameraDevice = CameraDevice.rear,
+  }) {
+    return platform.pickImages(
       source: source,
       maxWidth: maxWidth,
       maxHeight: maxHeight,
